@@ -1,118 +1,125 @@
-// use strict;
+/* eslint-disable no-inner-declarations */
+'use strict';
 
+function movie(remove='x' ,name,category, release){
+  this.remove=remove;
+  this.name = name;
+  this.category = category;
+  this.release = release;
 
-let right_section = document.getElementById('right_section');
-let clear = document.getElementById('clear');
-let form = document.getElementById('form');
-let table = document.createElement('table');
-
-
-if(localStorage.getItem('lest')===null){
-    localStorage.setItem('lest',JSON.stringify([]));  
-}
-let moviearr = JSON.parse(localStorage.getItem('lest'));
-
-function MovieLest (name,imge,release){
-    this.name=name;
-    this.imge=imge;
-    // this.img.src= this.photo(nam,src);
-    this.release=release;
-
-    moviearr.push(this);
-    localStorage.setItem('lest',JSON.stringify(moviearr));
+  movie.all.push(this);
 }
 
 
-MovieLest.prototype.photo = function(namzz,src0){
+movie.all = [];
 
-namzz = ['Action','Adventure','Animation','Comedy','Detective','Fantasy','History','Musical','Pirate','Romantic','SCI-FI','War','Western','Horror']
-src0 = [
-    'action.png','adventure.png','animation.png','comedy.png','detective.png','fantasy.png','history.png','horror.png','musical.png','pirate.png','romantic.png','sci-fi.png','war.png','western.png'
-]
-let imgF = document.createElement("img");
- 
-imgF.src = namzz[i];
+getDAta();
 
- 
-src0.appendChild(imgF);
+let count =0;
+let tableElement = document.getElementById('table');
+movie.prototype.createMovieTable= function (){
+  let trElement = document.createElement('tr');
+  tableElement.appendChild(trElement);
+
+  let tdElement1 = document.createElement('td');
+  trElement.appendChild(tdElement1);
+  let spanElement = document.createElement('span');
+  tdElement1.appendChild(spanElement);
+  spanElement.textContent = movie.all[count].remove;
+
+  let tdElement2 = document.createElement('td');
+  trElement.appendChild(tdElement2);
+  tdElement2.textContent = movie.all[count].name;
+
+  let tdElement3 = document.createElement('td');
+  trElement.appendChild(tdElement3);
+  let imgElement  = document.createElement('img');
+  tdElement3.appendChild(imgElement);
+  imgElement.src = movie.all[count].category;
+
+  let tdElement4 = document.createElement('td');
+  trElement.appendChild(tdElement4);
+  tdElement4.textContent = movie.all[count].release;
+
+  count++;
 };
 
-document.addEventListener('submit', subhandler);
 
-function subhandler(event){
-    event.preventDefault();
-
-    let moName = event.target.name.value;
-    let img = event.target.imge.value;
-    let release = event.target.release.value;
-
-    new MovieLest (moName,img,release);
-    console.log(moviearr);
-    render();
+for(let i = 0 ; i< movie.all.length ;i++){
+  movie.all[i].createMovieTable();
 }
-document.addEventListener('click', removefun);
 
-function removefun(event){
-    if(event.target.id =='clear'){
-        right_section.innerHTML= ' ';
-        localStorage.clear();
-        moviearr = [];
+
+let formMovie= document.getElementById('formMovie');
+
+formMovie.addEventListener('submit',createNewMovie);
+
+function createNewMovie(e){
+//   e.preventDefault();
+  let remove = 'x';
+  let name = e.target.name.value;
+  let category = 'img/'+e.target.category.value + '.png';
+  let release = e.target.release.value;
+
+  let newMovie= new movie(remove,name,category ,release);
+
+  newMovie.createMovieTable();
+
+  localStorage.movies = JSON.stringify(movie.all);
+
+}
+
+
+function getDAta(){
+  if(localStorage.movies){
+    let newMovies = JSON.parse(localStorage.movies);
+
+    for(let i = 0; i < newMovies.length ;i++){
+      new movie(newMovies[i].remove,newMovies[i].name,newMovies[i].category,newMovies[i].release);
     }
+  }
 }
 
-function render(){
-      right_section.innerHTML=' ';
-      right_section.appendChild(table);
 
-      let row = document.createElement('tr');
-      let th1 = document.createElement('th');
-      let th2 = document.createElement('th');
-      let th3 = document.createElement('th');
-      let th4 = document.createElement('th');
 
-      th1.innerHTML='Movie name';
-      th2.innerHTML='Movie img';
-      th3.innerHTML='Movie relase ';
-      th4.innerHTML='remove movie';
+let btnClear  = document.getElementById('cleatBtn');
+btnClear.onclick = clearData;
 
-      table.appendChild(row);
-      row.appendChild(th1);
-      row.appendChild(th2);
-      row.appendChild(th3);
-      row.appendChild(th4);
-
-      for(let i = 0 ;i<moviearr.length;i++){
-     
-  
-        let rownew = document.createElement('tr');
-        let td1 = document.createElement('td');
-        let td2 = document.createElement('td');
-        let td3 = document.createElement('td');
-        let td4 = document.createElement('td');
-  
-        td1.innerHTML=moviearr[i].name;
-        td2.innerHTML=moviearr[i].imge;
-        td3.innerHTML=moviearr[i].release;
-        td4.innerHTML='X';
-  
-        table.appendChild(rownew);
-        rownew.appendChild(td1);
-        rownew.appendChild(td2);
-        rownew.appendChild(td3);
-        rownew.appendChild(td4);
-
-      }
+function clearData(){
+  localStorage.clear();
+  location.reload();
 }
-table.addEventListener('click',removerow);
-function removerow(event){
 
-    event.preventDefault();
-    let target = event.target.innerText;
-    if(target== 'X'){
-        let child = parseInt(event.target.parentElement.rowIndex);
-        event.target.parentElement.remove();
-        moviearr.splice(child,1);
-        localStorage.lest = JSON.stringify(moviearr);
-    }
+
+let btnRemoveItem = document.querySelectorAll('td span');
+
+
+for (let i = 0; i < btnRemoveItem.length;i++){
+  btnRemoveItem[i].addEventListener('click',removeItem);
+
+  function removeItem(){
+
+    tableElement.removeChild(btnRemoveItem[i].parentElement.parentElement);
+    movie.all.splice(i,1);
+
+    localStorage.movies = JSON.stringify(movie.all);
+
+    location.reload();
+
+  }
 }
-render();
+
+
+let trColor = document.querySelectorAll('tr');
+
+for(let i =0; i< trColor.length; i++){
+  if(i%2===0){
+    trColor[i].style.backgroundColor = '#A2DBFA';
+  }else{
+    trColor[i].style.backgroundColor = '#77ACF1';
+  }
+}
+
+
+
+
